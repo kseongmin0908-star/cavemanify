@@ -135,7 +135,7 @@ body.light-mode #theme-toggle .icon-light { display: inline; }
     align-items: center;
     justify-content: center;
     text-align: center;
-    background-image: linear-gradient(var(--hero-overlay), var(--hero-overlay)), url('https://storage.googleapis.com/gemini-studio-app-assets/acqua-di-cristallo-tributo-a-modigliani-hero.jpeg');
+    background-image: linear-gradient(var(--hero-overlay), var(--hero-overlay)), url('https://pixabay.com/ko/images/download/counselling-carafe-505203_1920.jpg');
     background-size: cover;
     background-position: center;
 }
@@ -240,4 +240,15 @@ footer {
     border-top: 1px solid var(--border-color);
     font-weight: 300;
     transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+.footer-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.1em;
+    transition: color 0.3s;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
 }
