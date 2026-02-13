@@ -16,7 +16,7 @@
             <ul>
                 <li><a href="#about">The Story</a></li>
                 <li><a href="#gallery">Gallery</a></li>
-                <li><a href="#contact">Inquire</a></li>
+                <li><a href="#contact">제휴문의</a></li>
             </ul>
             <button id="theme-toggle" aria-label="Toggle theme">
                 <span class="icon-dark">&#9790;</span>
@@ -56,11 +56,35 @@
         </section>
 
         <section id="contact">
-            <p class="section-eyebrow">Private Access</p>
-            <h2>Inquire</h2>
+            <p class="section-eyebrow">Partnership</p>
+            <h2>제휴 문의</h2>
             <div class="gold-divider center"></div>
-            <p>For acquisition inquiries, please contact our exclusive concierge.</p>
-            <p class="contact-email">concierge@acquadicristallo.com</p>
+            <p>제휴 및 비즈니스 문의를 남겨주시면 담당자가 연락드리겠습니다.</p>
+            <form class="contact-form" action="https://formspree.io/f/xykdezdw" method="POST">
+                <div class="form-group">
+                    <input type="text" name="name" placeholder="이름 / 회사명" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" name="email" placeholder="이메일" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" name="phone" placeholder="연락처">
+                </div>
+                <div class="form-group">
+                    <select name="type" required>
+                        <option value="" disabled selected>문의 유형 선택</option>
+                        <option value="wholesale">도매 / 유통</option>
+                        <option value="hotel">호텔 / 리조트</option>
+                        <option value="restaurant">레스토랑 / 바</option>
+                        <option value="corporate">기업 선물</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <textarea name="message" rows="5" placeholder="문의 내용을 입력해주세요" required></textarea>
+                </div>
+                <button type="submit" class="btn">문의하기</button>
+            </form>
         </section>
     </main>
 

@@ -327,11 +327,71 @@ section h2 {
     font-weight: 300;
 }
 
-.contact-email {
-    font-size: 1.4em;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-    margin-top: 1em;
+.contact-form {
+    max-width: 560px;
+    margin: 2.5em auto 0;
+}
+
+.form-group {
+    margin-bottom: 1.2em;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+    width: 100%;
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15em;
+    font-weight: 300;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    outline: none;
+    letter-spacing: 0.04em;
+    transition: border-color 0.3s, box-shadow 0.3s, background-color 0.5s, color 0.5s;
+}
+
+.contact-form select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4AF37' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+}
+
+.contact-form select option {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.contact-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.contact-form select:invalid {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.contact-form input:focus,
+.contact-form select:focus,
+.contact-form textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+}
+
+.contact-form .btn {
+    width: 100%;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
 }
 
 /* ── Footer ── */
