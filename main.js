@@ -239,133 +239,37 @@ retryBtn.addEventListener('click', () => {
     lastResult = null;
 });
 
-// ── Share ──
+// ── Share Utilities ──
+const siteURL = window.location.href;
+
 function getShareText() {
     if (!lastResult) return '';
     const prim = lastResult.primitiveProb.toFixed(1);
     const mod = lastResult.modernProb.toFixed(1);
-    return `${lastResult.emoji} ${lastResult.title}\n원시인 ${prim}% | 현대인 ${mod}%\n\n나는 과연 원시인일까 현대인일까? 지금 확인해보세요!`;
+    return `${lastResult.emoji} ${lastResult.title}\n원시인 ${prim}% | 현대인 ${mod}%\n\n나는 과연 원시인일까 현대인일까? 지금 확인해보세요!\n${siteURL}`;
 }
 
-const siteURL = window.location.href;
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return Promise.resolve();
+}
 
-// ── Instagram Story Image Generator ──
-function generateStoryImage() {
-    return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        // Instagram story ratio 1080x1920
-        canvas.width = 1080;
-        canvas.height = 1920;
-
-        const msg = lastResult;
-        const isPrimitive = msg.type === 'primitive';
-        const isBalanced = msg.type === 'balanced';
-
-        // Background gradient
-        const grad = ctx.createLinearGradient(0, 0, 0, 1920);
-        if (isPrimitive) {
-            grad.addColorStop(0, '#1a0a00');
-            grad.addColorStop(0.5, '#2d1200');
-            grad.addColorStop(1, '#1a0a00');
-        } else if (isBalanced) {
-            grad.addColorStop(0, '#1a1028');
-            grad.addColorStop(0.5, '#241538');
-            grad.addColorStop(1, '#1a1028');
-        } else {
-            grad.addColorStop(0, '#001a14');
-            grad.addColorStop(0.5, '#002d22');
-            grad.addColorStop(1, '#001a14');
-        }
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 1080, 1920);
-
-        // Decorative circles
-        const accentColor = isPrimitive ? 'rgba(255,107,53,0.08)' : isBalanced ? 'rgba(199,125,255,0.08)' : 'rgba(0,212,170,0.08)';
-        ctx.fillStyle = accentColor;
-        ctx.beginPath(); ctx.arc(200, 300, 250, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(880, 1600, 300, 0, Math.PI * 2); ctx.fill();
-
-        // Top label
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.font = '600 32px "Noto Sans KR", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('AI 얼굴 판별 결과', 540, 280);
-
-        // Emoji
-        ctx.font = '180px serif';
-        ctx.fillText(msg.emoji, 540, 520);
-
-        // Title
-        const titleColor = isPrimitive ? '#ff6b35' : isBalanced ? '#c77dff' : '#00d4aa';
-        ctx.fillStyle = titleColor;
-        ctx.font = '900 72px "Noto Sans KR", sans-serif';
-        ctx.fillText(msg.title, 540, 660);
-
-        // Percentage bars
-        const prim = msg.primitiveProb.toFixed(1);
-        const mod = msg.modernProb.toFixed(1);
-        const barY = 760;
-        const barWidth = 700;
-        const barHeight = 40;
-        const barX = (1080 - barWidth) / 2;
-
-        // 원시인 bar
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        roundRect(ctx, barX, barY, barWidth, barHeight, 20);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255,107,53,0.8)';
-        const primWidth = Math.max((msg.primitiveProb / 100) * barWidth, 40);
-        roundRect(ctx, barX, barY, primWidth, barHeight, 20);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.font = '700 28px "Noto Sans KR", sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(`🦴 원시인 ${prim}%`, barX + 16, barY + 30);
-
-        // 현대인 bar
-        const bar2Y = barY + 60;
-        ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        roundRect(ctx, barX, bar2Y, barWidth, barHeight, 20);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(0,212,170,0.8)';
-        const modWidth = Math.max((msg.modernProb / 100) * barWidth, 40);
-        roundRect(ctx, barX, bar2Y, modWidth, barHeight, 20);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'left';
-        ctx.fillText(`💻 현대인 ${mod}%`, barX + 16, bar2Y + 30);
-
-        // Description box
-        ctx.textAlign = 'center';
-        const descBoxY = 940;
-        const descBoxWidth = 880;
-        const descBoxX = (1080 - descBoxWidth) / 2;
-        ctx.fillStyle = isPrimitive ? 'rgba(255,107,53,0.1)' : isBalanced ? 'rgba(199,125,255,0.1)' : 'rgba(0,212,170,0.1)';
-        roundRect(ctx, descBoxX, descBoxY, descBoxWidth, 420, 30);
-        ctx.fill();
-        ctx.strokeStyle = isPrimitive ? 'rgba(255,107,53,0.25)' : isBalanced ? 'rgba(199,125,255,0.25)' : 'rgba(0,212,170,0.25)';
-        ctx.lineWidth = 2;
-        roundRect(ctx, descBoxX, descBoxY, descBoxWidth, 420, 30);
-        ctx.stroke();
-
-        // Description text (word wrap)
-        ctx.fillStyle = isPrimitive ? '#ffb899' : isBalanced ? '#e0c8ff' : '#80eed5';
-        ctx.font = '400 34px "Noto Sans KR", sans-serif';
-        wrapText(ctx, msg.desc, 540, descBoxY + 60, descBoxWidth - 60, 52);
-
-        // Bottom branding
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.font = '600 30px "Noto Sans KR", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🦣 원시인 vs 현대인 판별기 🧑‍💻', 540, 1700);
-
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.font = '400 26px "Noto Sans KR", sans-serif';
-        ctx.fillText('나도 테스트 해보기 →', 540, 1750);
-
-        resolve(canvas);
-    });
+function showToast(message, duration) {
+    const toast = document.getElementById('share-toast');
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), duration || 2500);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -388,8 +292,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     let currentY = y;
     for (let i = 0; i < chars.length; i++) {
         const testLine = line + chars[i];
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && line.length > 0) {
+        if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
             ctx.fillText(line, x, currentY);
             line = chars[i];
             currentY += lineHeight;
@@ -400,97 +303,210 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     ctx.fillText(line, x, currentY);
 }
 
-document.getElementById('share-insta').addEventListener('click', async () => {
-    if (!lastResult) return;
+// ── Share Image Generator (includes user photo + results) ──
+function generateShareImage(format) {
+    return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
-    const canvas = await generateStoryImage();
+        // Instagram story = 1080x1920, KakaoTalk/general = 1080x1080
+        const isStory = format === 'story';
+        canvas.width = 1080;
+        canvas.height = isStory ? 1920 : 1080;
+        const W = canvas.width;
+        const H = canvas.height;
 
-    // Try Web Share API first (works on mobile with file sharing)
-    if (navigator.canShare) {
-        canvas.toBlob(async (blob) => {
-            const file = new File([blob], 'primitive-vs-modern-result.png', { type: 'image/png' });
-            const shareData = { files: [file] };
-            if (navigator.canShare(shareData)) {
-                try {
-                    await navigator.share(shareData);
-                    return;
-                } catch (e) {
-                    // User cancelled or failed, fall through to download
-                }
-            }
-            // Fallback: download the image
-            downloadCanvasImage(canvas);
-        }, 'image/png');
-    } else {
-        // Fallback: download the image
-        downloadCanvasImage(canvas);
-    }
-});
+        const msg = lastResult;
+        const isPrimitive = msg.type === 'primitive';
+        const isBalanced = msg.type === 'balanced';
 
-function downloadCanvasImage(canvas) {
-    const link = document.createElement('a');
-    link.download = 'primitive-vs-modern-result.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        if (isPrimitive) {
+            grad.addColorStop(0, '#1a0a00'); grad.addColorStop(0.5, '#2d1200'); grad.addColorStop(1, '#1a0a00');
+        } else if (isBalanced) {
+            grad.addColorStop(0, '#1a1028'); grad.addColorStop(0.5, '#241538'); grad.addColorStop(1, '#1a1028');
+        } else {
+            grad.addColorStop(0, '#001a14'); grad.addColorStop(0.5, '#002d22'); grad.addColorStop(1, '#001a14');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
 
-    const toast = document.getElementById('share-toast');
-    toast.textContent = '이미지가 저장되었습니다! 인스타 스토리에 올려보세요 📷';
-    toast.classList.remove('hidden');
-    setTimeout(() => {
-        toast.classList.add('hidden');
-        toast.textContent = '링크가 복사되었습니다!';
-    }, 3000);
+        // Decorative circles
+        const accent = isPrimitive ? 'rgba(255,107,53,0.08)' : isBalanced ? 'rgba(199,125,255,0.08)' : 'rgba(0,212,170,0.08)';
+        ctx.fillStyle = accent;
+        ctx.beginPath(); ctx.arc(150, 150, 200, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(W - 150, H - 150, 250, 0, Math.PI * 2); ctx.fill();
+
+        // ── User Photo (circular) ──
+        const img = previewImage;
+        const photoY = isStory ? 160 : 80;
+        const photoSize = isStory ? 340 : 240;
+        const photoCX = W / 2;
+        const photoCY = photoY + photoSize / 2;
+
+        // Circle clip for photo
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(photoCX, photoCY, photoSize / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        // Draw photo centered in circle
+        const imgRatio = img.naturalWidth / img.naturalHeight;
+        let drawW, drawH, drawX, drawY;
+        if (imgRatio > 1) {
+            drawH = photoSize;
+            drawW = photoSize * imgRatio;
+            drawX = photoCX - drawW / 2;
+            drawY = photoY;
+        } else {
+            drawW = photoSize;
+            drawH = photoSize / imgRatio;
+            drawX = photoCX - photoSize / 2;
+            drawY = photoCY - drawH / 2;
+        }
+        ctx.drawImage(img, drawX, drawY, drawW, drawH);
+        ctx.restore();
+
+        // Photo border
+        const borderColor = isPrimitive ? '#ff6b35' : isBalanced ? '#c77dff' : '#00d4aa';
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(photoCX, photoCY, photoSize / 2 + 3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // ── Emoji + Title ──
+        const titleStartY = photoY + photoSize + (isStory ? 70 : 50);
+
+        ctx.textAlign = 'center';
+        ctx.font = isStory ? '120px serif' : '80px serif';
+        ctx.fillText(msg.emoji, W / 2, titleStartY);
+
+        const titleColor = isPrimitive ? '#ff6b35' : isBalanced ? '#c77dff' : '#00d4aa';
+        ctx.fillStyle = titleColor;
+        ctx.font = isStory ? '900 68px "Noto Sans KR", sans-serif' : '900 52px "Noto Sans KR", sans-serif';
+        ctx.fillText(msg.title, W / 2, titleStartY + (isStory ? 90 : 70));
+
+        // ── Percentage Bars ──
+        const prim = msg.primitiveProb.toFixed(1);
+        const mod = msg.modernProb.toFixed(1);
+        const barY = titleStartY + (isStory ? 140 : 110);
+        const barWidth = isStory ? 700 : 600;
+        const barHeight = isStory ? 44 : 36;
+        const barX = (W - barWidth) / 2;
+
+        // 원시인 bar
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        roundRect(ctx, barX, barY, barWidth, barHeight, barHeight / 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,107,53,0.85)';
+        roundRect(ctx, barX, barY, Math.max((msg.primitiveProb / 100) * barWidth, barHeight), barHeight, barHeight / 2); ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = `700 ${isStory ? 26 : 22}px "Noto Sans KR", sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.fillText(`🦴 원시인 ${prim}%`, barX + 14, barY + barHeight * 0.72);
+
+        // 현대인 bar
+        const bar2Y = barY + barHeight + 14;
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        roundRect(ctx, barX, bar2Y, barWidth, barHeight, barHeight / 2); ctx.fill();
+        ctx.fillStyle = 'rgba(0,212,170,0.85)';
+        roundRect(ctx, barX, bar2Y, Math.max((msg.modernProb / 100) * barWidth, barHeight), barHeight, barHeight / 2); ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`💻 현대인 ${mod}%`, barX + 14, bar2Y + barHeight * 0.72);
+
+        // ── Description Box ──
+        ctx.textAlign = 'center';
+        const descY = bar2Y + barHeight + (isStory ? 40 : 30);
+        const descW = isStory ? 880 : 760;
+        const descX = (W - descW) / 2;
+        const descH = isStory ? 380 : 220;
+
+        ctx.fillStyle = isPrimitive ? 'rgba(255,107,53,0.1)' : isBalanced ? 'rgba(199,125,255,0.1)' : 'rgba(0,212,170,0.1)';
+        roundRect(ctx, descX, descY, descW, descH, 24); ctx.fill();
+        ctx.strokeStyle = isPrimitive ? 'rgba(255,107,53,0.25)' : isBalanced ? 'rgba(199,125,255,0.25)' : 'rgba(0,212,170,0.25)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, descX, descY, descW, descH, 24); ctx.stroke();
+
+        ctx.fillStyle = isPrimitive ? '#ffb899' : isBalanced ? '#e0c8ff' : '#80eed5';
+        ctx.font = `400 ${isStory ? 32 : 24}px "Noto Sans KR", sans-serif`;
+        wrapText(ctx, msg.desc, W / 2, descY + (isStory ? 50 : 38), descW - 60, isStory ? 48 : 36);
+
+        // ── Bottom Branding ──
+        const bottomY = H - (isStory ? 120 : 50);
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = `700 ${isStory ? 30 : 24}px "Noto Sans KR", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('🦣 원시인 vs 현대인 판별기 🧑‍💻', W / 2, bottomY);
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.font = `400 ${isStory ? 24 : 20}px "Noto Sans KR", sans-serif`;
+        ctx.fillText('cavemanify.pages.dev', W / 2, bottomY + (isStory ? 36 : 30));
+
+        resolve(canvas);
+    });
 }
 
-document.getElementById('share-kakao').addEventListener('click', async () => {
-    const text = getShareText() + '\n' + siteURL;
+function canvasToBlob(canvas) {
+    return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+}
 
-    // Mobile: use Web Share API to share directly to KakaoTalk
-    if (navigator.share) {
+async function shareWithImage(canvas, filename) {
+    const blob = await canvasToBlob(canvas);
+    const file = new File([blob], filename, { type: 'image/png' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
-            await navigator.share({ title: '원시인 vs 현대인 판별기', text: text });
-            return;
+            await navigator.share({
+                files: [file],
+                title: '원시인 vs 현대인 판별기',
+                text: getShareText()
+            });
+            return true;
         } catch (e) {
-            // User cancelled, fall through
-            if (e.name === 'AbortError') return;
+            if (e.name === 'AbortError') return true; // user cancelled
         }
     }
-
-    // PC fallback: copy text and notify
-    copyToClipboard(text).then(() => {
-        const toast = document.getElementById('share-toast');
-        toast.textContent = '텍스트가 복사되었습니다! 카카오톡에 붙여넣기 해주세요 💬';
-        toast.classList.remove('hidden');
-        setTimeout(() => {
-            toast.classList.add('hidden');
-            toast.textContent = '링크가 복사되었습니다!';
-        }, 3000);
-    });
-});
-
-document.getElementById('share-link').addEventListener('click', () => {
-    const text = getShareText() + '\n' + siteURL;
-    copyToClipboard(text).then(() => {
-        const toast = document.getElementById('share-toast');
-        toast.textContent = '링크가 복사되었습니다!';
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 2000);
-    });
-});
-
-function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-        return navigator.clipboard.writeText(text);
-    }
-    // Fallback for non-secure contexts or older browsers
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return Promise.resolve();
+    return false;
 }
+
+function downloadCanvas(canvas, filename, toastMsg) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast(toastMsg, 3000);
+}
+
+// ── Instagram Story Share ──
+document.getElementById('share-insta').addEventListener('click', async () => {
+    if (!lastResult) return;
+    showToast('이미지 생성 중...', 5000);
+
+    const canvas = await generateShareImage('story');
+    const shared = await shareWithImage(canvas, 'cavemanify-story.png');
+
+    if (!shared) {
+        downloadCanvas(canvas, 'cavemanify-story.png', '이미지가 저장되었습니다! 인스타 스토리에 올려보세요 📷');
+    }
+});
+
+// ── KakaoTalk Share ──
+document.getElementById('share-kakao').addEventListener('click', async () => {
+    if (!lastResult) return;
+    showToast('이미지 생성 중...', 5000);
+
+    const canvas = await generateShareImage('square');
+    const shared = await shareWithImage(canvas, 'cavemanify-result.png');
+
+    if (!shared) {
+        downloadCanvas(canvas, 'cavemanify-result.png', '이미지가 저장되었습니다! 카카오톡에서 사진을 전송해보세요 💬');
+    }
+});
+
+// ── Link Copy ──
+document.getElementById('share-link').addEventListener('click', () => {
+    copyToClipboard(getShareText()).then(() => {
+        showToast('링크가 복사되었습니다!', 2000);
+    });
+});
