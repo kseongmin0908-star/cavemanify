@@ -57,13 +57,25 @@
                         <div id="label-container"></div>
                     </div>
                     <div class="share-section">
-                        <p class="share-label">친구에게 공유하기</p>
-                        <div class="share-buttons">
-                            <button id="share-insta" class="share-btn insta-btn">📷 인스타 스토리</button>
-                            <button id="share-kakao" class="share-btn kakao">💬 카톡 공유</button>
-                            <button id="share-link" class="share-btn link-btn">🔗 링크 복사</button>
+                        <div class="share-group">
+                            <button id="btn-share-result" class="share-main-btn result-share">
+                                📸 친구에게 결과 공유하기
+                            </button>
+                            <div id="menu-result" class="share-menu hidden">
+                                <button class="share-option" data-action="result-native">📤 공유하기 (앱 선택)</button>
+                                <button class="share-option" data-action="result-download">💾 이미지 저장</button>
+                            </div>
                         </div>
-                        <div id="share-toast" class="share-toast hidden">링크가 복사되었습니다!</div>
+                        <div class="share-group">
+                            <button id="btn-share-link" class="share-main-btn link-share">
+                                🔗 결과없이 링크 공유하기
+                            </button>
+                            <div id="menu-link" class="share-menu hidden">
+                                <button class="share-option" data-action="link-native">📤 공유하기 (앱 선택)</button>
+                                <button class="share-option" data-action="link-copy">📋 링크 복사</button>
+                            </div>
+                        </div>
+                        <div id="share-toast" class="share-toast hidden"></div>
                     </div>
                 </div>
 
