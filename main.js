@@ -272,6 +272,21 @@ function showToast(message, duration) {
     setTimeout(function () { toast.classList.add('hidden'); }, duration || 2500);
 }
 
+// ── 둥근 사각형 그리기 (모든 브라우저 호환) ──
+function drawRoundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
 // ── 결과 이미지 생성 (사용자 사진 + 결과 포함) ──
 function generateResultImage() {
     var canvas = document.createElement('canvas');
@@ -285,12 +300,7 @@ function generateResultImage() {
     var mainColor = isPrimitive ? '#ff6b35' : isBalanced ? '#c77dff' : '#00d4aa';
 
     // 배경
-    ctx.fillStyle = '#1a1028';
-    ctx.fillRect(0, 0, 1080, 1440);
-    var grad = ctx.createLinearGradient(0, 0, 1080, 1440);
-    grad.addColorStop(0, 'rgba(42,26,66,1)');
-    grad.addColorStop(1, 'rgba(26,16,40,1)');
-    ctx.fillStyle = grad;
+    ctx.fillStyle = '#2a1a42';
     ctx.fillRect(0, 0, 1080, 1440);
 
     // 상단 타이틀
@@ -302,21 +312,21 @@ function generateResultImage() {
     // 사용자 사진 (원형)
     var img = previewImage;
     var photoSize = 300;
-    var cx = 540, cy = 250;
+    var pcx = 540, pcy = 250;
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, photoSize / 2, 0, Math.PI * 2);
+    ctx.arc(pcx, pcy, photoSize / 2, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
     var ratio = img.naturalWidth / img.naturalHeight;
     var dw, dh, dx, dy;
     if (ratio > 1) {
         dh = photoSize; dw = photoSize * ratio;
-        dx = cx - dw / 2; dy = cy - photoSize / 2;
+        dx = pcx - dw / 2; dy = pcy - photoSize / 2;
     } else {
         dw = photoSize; dh = photoSize / ratio;
-        dx = cx - photoSize / 2; dy = cy - dh / 2;
+        dx = pcx - photoSize / 2; dy = pcy - dh / 2;
     }
     ctx.drawImage(img, dx, dy, dw, dh);
     ctx.restore();
@@ -325,12 +335,13 @@ function generateResultImage() {
     ctx.strokeStyle = mainColor;
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.arc(cx, cy, photoSize / 2 + 4, 0, Math.PI * 2);
+    ctx.arc(pcx, pcy, photoSize / 2 + 4, 0, Math.PI * 2);
     ctx.stroke();
 
     // 이모지
     ctx.textAlign = 'center';
     ctx.font = '100px serif';
+    ctx.fillStyle = '#ffffff';
     ctx.fillText(msg.emoji, 540, 500);
 
     // 타이틀
@@ -339,45 +350,45 @@ function generateResultImage() {
     ctx.fillText(msg.title, 540, 590);
 
     // 퍼센트 바
-    var prim = msg.primitiveProb.toFixed(1);
-    var mod = msg.modernProb.toFixed(1);
+    var primVal = msg.primitiveProb.toFixed(1);
+    var modVal = msg.modernProb.toFixed(1);
     var bx = 140, bw = 800, bh = 44;
 
     // 원시인 바
     var b1y = 640;
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.beginPath(); ctx.roundRect(bx, b1y, bw, bh, 22); ctx.fill();
+    drawRoundRect(ctx, bx, b1y, bw, bh, 22); ctx.fill();
     ctx.fillStyle = '#ff6b35';
-    ctx.beginPath(); ctx.roundRect(bx, b1y, Math.max((msg.primitiveProb / 100) * bw, 44), bh, 22); ctx.fill();
+    drawRoundRect(ctx, bx, b1y, Math.max((msg.primitiveProb / 100) * bw, 44), bh, 22); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.font = '700 24px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('원시인 ' + prim + '%', bx + 16, b1y + 30);
+    ctx.fillText('원시인 ' + primVal + '%', bx + 16, b1y + 30);
 
     // 현대인 바
     var b2y = b1y + 60;
     ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    ctx.beginPath(); ctx.roundRect(bx, b2y, bw, bh, 22); ctx.fill();
+    drawRoundRect(ctx, bx, b2y, bw, bh, 22); ctx.fill();
     ctx.fillStyle = '#00d4aa';
-    ctx.beginPath(); ctx.roundRect(bx, b2y, Math.max((msg.modernProb / 100) * bw, 44), bh, 22); ctx.fill();
+    drawRoundRect(ctx, bx, b2y, Math.max((msg.modernProb / 100) * bw, 44), bh, 22); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
-    ctx.fillText('현대인 ' + mod + '%', bx + 16, b2y + 30);
+    ctx.fillText('현대인 ' + modVal + '%', bx + 16, b2y + 30);
 
     // 설명 박스
     var dsx = 100, dsw = 880, dsy = 800, dsh = 480;
     ctx.fillStyle = isPrimitive ? 'rgba(255,107,53,0.08)' : isBalanced ? 'rgba(199,125,255,0.08)' : 'rgba(0,212,170,0.08)';
-    ctx.beginPath(); ctx.roundRect(dsx, dsy, dsw, dsh, 24); ctx.fill();
+    drawRoundRect(ctx, dsx, dsy, dsw, dsh, 24); ctx.fill();
     ctx.strokeStyle = isPrimitive ? 'rgba(255,107,53,0.2)' : isBalanced ? 'rgba(199,125,255,0.2)' : 'rgba(0,212,170,0.2)';
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(dsx, dsy, dsw, dsh, 24); ctx.stroke();
+    drawRoundRect(ctx, dsx, dsy, dsw, dsh, 24); ctx.stroke();
 
     ctx.fillStyle = isPrimitive ? '#ffb899' : isBalanced ? '#e0c8ff' : '#80eed5';
     ctx.font = '400 32px sans-serif';
     ctx.textAlign = 'center';
-    var text = msg.desc, line = '', ly = dsy + 55, mw = dsw - 60;
-    for (var i = 0; i < text.length; i++) {
-        var test = line + text[i];
+    var desc = msg.desc, line = '', ly = dsy + 55, mw = dsw - 60;
+    for (var i = 0; i < desc.length; i++) {
+        var test = line + desc[i];
         if (ctx.measureText(test).width > mw && line.length > 0) {
             ctx.fillText(line, 540, ly);
-            line = text[i]; ly += 46;
+            line = desc[i]; ly += 46;
         } else { line = test; }
     }
     ctx.fillText(line, 540, ly);
@@ -446,7 +457,7 @@ document.querySelector('.share-section').addEventListener('click', function (e) 
                 showToast('이 브라우저에서는 앱 공유를 지원하지 않아 이미지를 저장했습니다.', 3000);
             }
         } catch (err) {
-            showToast('이미지 생성 실패: ' + err.message, 3000);
+            alert('[결과 공유 오류] ' + err.message);
         }
         menuResult.classList.add('hidden');
     }
@@ -459,7 +470,7 @@ document.querySelector('.share-section').addEventListener('click', function (e) 
             downloadDataURL(dataURL, 'cavemanify-result.png');
             showToast('이미지가 저장되었습니다! 카톡/인스타에 공유해보세요 📸', 3000);
         } catch (err) {
-            showToast('이미지 생성 실패: ' + err.message, 3000);
+            alert('[이미지 저장 오류] ' + err.message);
         }
         menuResult.classList.add('hidden');
     }
