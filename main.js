@@ -442,10 +442,30 @@ function downloadCanvasImage(canvas) {
     }, 3000);
 }
 
-document.getElementById('share-kakao').addEventListener('click', () => {
-    const text = getShareText();
-    const kakaoURL = 'https://story.kakao.com/share?url=' + encodeURIComponent(siteURL) + '&text=' + encodeURIComponent(text);
-    window.open(kakaoURL, '_blank', 'width=600,height=400');
+document.getElementById('share-kakao').addEventListener('click', async () => {
+    const text = getShareText() + '\n' + siteURL;
+
+    // Mobile: use Web Share API to share directly to KakaoTalk
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: '원시인 vs 현대인 판별기', text: text });
+            return;
+        } catch (e) {
+            // User cancelled, fall through
+            if (e.name === 'AbortError') return;
+        }
+    }
+
+    // PC fallback: copy text and notify
+    copyToClipboard(text).then(() => {
+        const toast = document.getElementById('share-toast');
+        toast.textContent = '텍스트가 복사되었습니다! 카카오톡에 붙여넣기 해주세요 💬';
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+            toast.textContent = '링크가 복사되었습니다!';
+        }, 3000);
+    });
 });
 
 document.getElementById('share-link').addEventListener('click', () => {
