@@ -389,28 +389,43 @@ function copyToClipboardFallback(text) {
 // ── Share Link ──
 async function shareLink() {
     const siteUrl = 'https://cavemanify1.pages.dev';
-    const shareData = {
-        title: '원시인 vs 현대인 판별기',
-        text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
-        url: siteUrl
-    };
 
-    // 1) 동기 클립보드 복사 (execCommand — 유저 제스처를 소모하지 않음)
-    copyToClipboardFallback(siteUrl);
-
-    // 2) 네이티브 공유 시트 열기 (유저 제스처가 살아있는 상태에서 즉시 호출)
+    // 1) 네이티브 공유 시트 먼저 시도 (유저 제스처 필요 — 다른 작업 전에 즉시 호출)
     if (navigator.share) {
         try {
-            await navigator.share(shareData);
-            return; // 공유 시트에서 공유 완료
+            await navigator.share({
+                title: '원시인 vs 현대인 판별기',
+                text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
+                url: siteUrl
+            });
+            // 공유 시트에서 공유 완료 — 클립보드도 복사해두기
+            copyToClipboardFallback(siteUrl);
+            return;
         } catch (e) {
-            if (e.name === 'AbortError') return; // 사용자가 취소
-            // 공유 시트 실패 시 아래 토스트로 이동
+            if (e.name === 'AbortError') {
+                // 사용자가 취소 — 클립보드에는 복사해두기
+                copyToClipboardFallback(siteUrl);
+                showToast('✅ 링크가 클립보드에 복사되었습니다!');
+                return;
+            }
+            // 그 외 에러 — 공유 시트 실패, 아래 클립보드 복사로 이동
         }
     }
 
-    // 3) 공유 시트가 없거나 실패한 경우 토스트 안내
-    showToast('✅ 링크가 클립보드에 복사되었습니다!');
+    // 2) 공유 시트 미지원 또는 실패 시 클립보드 복사
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(siteUrl);
+            showToast('✅ 링크가 클립보드에 복사되었습니다!');
+            return;
+        } catch (e) { /* fall through */ }
+    }
+
+    if (copyToClipboardFallback(siteUrl)) {
+        showToast('✅ 링크가 클립보드에 복사되었습니다!');
+    } else {
+        showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
+    }
 }
 
 // ── DOM Elements ──
