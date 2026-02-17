@@ -387,8 +387,7 @@ function copyToClipboardFallback(text) {
 }
 
 // ── Kakao SDK 초기화 ──
-// TODO: 아래 'YOUR_KAKAO_APP_KEY'를 실제 JavaScript 앱 키로 교체하세요
-var KAKAO_APP_KEY = 'YOUR_KAKAO_APP_KEY';
+var KAKAO_APP_KEY = '0318bd2acd367f95937b80bd65e83302';
 var kakaoReady = false;
 
 try {
