@@ -176,21 +176,21 @@ function buildCanvas(userImg) {
 
     // Background gradient
     const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-    bgGrad.addColorStop(0, '#1a1028');
-    bgGrad.addColorStop(0.5, '#2a1a42');
-    bgGrad.addColorStop(1, '#1a1028');
+    bgGrad.addColorStop(0, '#1A1008');
+    bgGrad.addColorStop(0.5, '#2C2418');
+    bgGrad.addColorStop(1, '#1A1008');
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
     // Outer border
-    ctx.strokeStyle = 'rgba(199, 125, 255, 0.3)';
+    ctx.strokeStyle = 'rgba(92, 61, 46, 0.5)';
     ctx.lineWidth = 2;
     roundRect(ctx, 2, 2, W - 4, H - 4, 14);
     ctx.stroke();
 
     // Top title
     ctx.font = '18px "Noto Sans KR", sans-serif';
-    ctx.fillStyle = '#a090c0';
+    ctx.fillStyle = '#8C7B6B';
     ctx.textAlign = 'center';
     ctx.fillText('🦣 원시인 vs 현대인 판별기', W / 2, topTitleY);
 
@@ -207,7 +207,7 @@ function buildCanvas(userImg) {
         const sy = (userImg.height - sh) / 2;
         ctx.drawImage(userImg, sx, sy, sw, sh, imgX, imgY, imgSize, imgSize);
         ctx.restore();
-        ctx.strokeStyle = 'rgba(199, 125, 255, 0.4)';
+        ctx.strokeStyle = 'rgba(92, 61, 46, 0.5)';
         ctx.lineWidth = 2;
         roundRect(ctx, imgX, imgY, imgSize, imgSize, 24);
         ctx.stroke();
@@ -219,17 +219,17 @@ function buildCanvas(userImg) {
     ctx.fillText(lastResult.emoji, W / 2, emojiY);
 
     // Result title
-    const titleColor = lastResult.type === 'primitive' ? '#ff6b35'
-        : lastResult.type === 'modern' ? '#00d4aa' : '#c77dff';
+    const titleColor = lastResult.type === 'primitive' ? '#E8621C'
+        : lastResult.type === 'modern' ? '#4A7C59' : '#F5A623';
     ctx.font = 'bold 26px "Noto Sans KR", sans-serif';
     ctx.fillStyle = titleColor;
     ctx.fillText(lastResult.title, W / 2, titleY);
 
     // Description background box
-    const descBoxColor = lastResult.type === 'primitive' ? 'rgba(255, 107, 53, 0.1)'
-        : lastResult.type === 'modern' ? 'rgba(0, 212, 170, 0.1)' : 'rgba(199, 125, 255, 0.08)';
-    const descBorderColor = lastResult.type === 'primitive' ? 'rgba(255, 107, 53, 0.25)'
-        : lastResult.type === 'modern' ? 'rgba(0, 212, 170, 0.25)' : 'rgba(199, 125, 255, 0.2)';
+    const descBoxColor = lastResult.type === 'primitive' ? 'rgba(232, 98, 28, 0.1)'
+        : lastResult.type === 'modern' ? 'rgba(74, 124, 89, 0.1)' : 'rgba(245, 166, 35, 0.08)';
+    const descBorderColor = lastResult.type === 'primitive' ? 'rgba(232, 98, 28, 0.25)'
+        : lastResult.type === 'modern' ? 'rgba(74, 124, 89, 0.25)' : 'rgba(245, 166, 35, 0.2)';
     ctx.fillStyle = descBoxColor;
     roundRect(ctx, pad, descY, contentW, descBlockH, 12);
     ctx.fill();
@@ -239,8 +239,8 @@ function buildCanvas(userImg) {
     ctx.stroke();
 
     // Description text
-    const descTextColor = lastResult.type === 'primitive' ? '#ffb899'
-        : lastResult.type === 'modern' ? '#80eed5' : '#d0c0e8';
+    const descTextColor = lastResult.type === 'primitive' ? '#F5C5A3'
+        : lastResult.type === 'modern' ? '#A3D4B5' : '#F2E8D5';
     ctx.font = '15px "Noto Sans KR", sans-serif';
     ctx.fillStyle = descTextColor;
     ctx.textAlign = 'left';
@@ -252,12 +252,12 @@ function buildCanvas(userImg) {
     const barX = 80;
     const barW = 320;
     const barH = 16;
-    drawBar(ctx, barX, barStartY, barW, barH, '🦴 원시인', lastResult.primitiveProb, '#ff6b35', '#ff9f75');
-    drawBar(ctx, barX, barStartY + 50, barW, barH, '💻 현대인', lastResult.modernProb, '#00d4aa', '#40ffd0');
+    drawBar(ctx, barX, barStartY, barW, barH, '🦴 원시인', lastResult.primitiveProb, '#E8621C', '#F5A623');
+    drawBar(ctx, barX, barStartY + 50, barW, barH, '💻 현대인', lastResult.modernProb, '#4A7C59', '#7BC89C');
 
     // Site URL
     ctx.font = '15px "Noto Sans KR", sans-serif';
-    ctx.fillStyle = '#c77dff';
+    ctx.fillStyle = '#F5A623';
     ctx.textAlign = 'center';
     ctx.fillText('🔗 cavemanify1.pages.dev', W / 2, urlY);
 
@@ -281,7 +281,7 @@ function roundRect(ctx, x, y, w, h, r) {
 function drawBar(ctx, barX, barY, barW, barH, label, value, color1, color2) {
     ctx.font = '14px "Noto Sans KR", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#f0e8ff';
+    ctx.fillStyle = '#F2E8D5';
     ctx.fillText(label, barX, barY - 6);
     ctx.textAlign = 'right';
     ctx.fillText(value.toFixed(1) + '%', barX + barW + 60, barY - 6);
@@ -338,9 +338,9 @@ async function saveResult() {
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>결과 저장</title>
                         <style>
-                            body { margin: 0; background: #1a1028; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
+                            body { margin: 0; background: #1A1008; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
                             img { max-width: 95%; height: auto; border-radius: 12px; }
-                            p { color: #c77dff; margin-top: 16px; font-size: 15px; text-align: center; padding: 0 20px; }
+                            p { color: #F5A623; margin-top: 16px; font-size: 15px; text-align: center; padding: 0 20px; }
                         </style>
                     </head>
                     <body>

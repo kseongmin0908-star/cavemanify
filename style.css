@@ -1,22 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
 
 :root {
-    --bg-primary: #1a1028;
-    --bg-secondary: #241538;
-    --bg-header: rgba(26, 16, 40, 0.92);
-    --bg-footer: #140c20;
-    --bg-card: #2a1a42;
-    --text-primary: #f0e8ff;
-    --text-secondary: #a090c0;
-    --accent: #c77dff;
-    --accent-light: #e0aaff;
-    --accent-dark: #9d4edd;
-    --accent-glow: rgba(199, 125, 255, 0.25);
-    --border-color: rgba(199, 125, 255, 0.25);
-    --primitive-color: #ff6b35;
-    --primitive-bg: rgba(255, 107, 53, 0.12);
-    --modern-color: #00d4aa;
-    --modern-bg: rgba(0, 212, 170, 0.12);
+    --bg-primary: #1A1008;
+    --bg-secondary: #201408;
+    --bg-header: rgba(26, 16, 8, 0.92);
+    --bg-footer: #140C06;
+    --bg-card: #2C2418;
+    --text-primary: #F2E8D5;
+    --text-secondary: #8C7B6B;
+    --accent: #E8621C;
+    --accent-light: #F5A623;
+    --accent-dark: #C0392B;
+    --accent-glow: rgba(232, 98, 28, 0.25);
+    --border-color: rgba(92, 61, 46, 0.5);
+    --primitive-color: #E8621C;
+    --primitive-bg: rgba(232, 98, 28, 0.12);
+    --modern-color: #4A7C59;
+    --modern-bg: rgba(74, 124, 89, 0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -83,7 +83,9 @@ header {
 .logo h1 {
     font-size: 1.5em;
     font-weight: 900;
+    font-family: 'Black Han Sans', sans-serif;
     color: var(--accent);
+    text-shadow: 0 0 20px rgba(232, 98, 28, 0.5), 0 0 40px rgba(232, 98, 28, 0.2);
 }
 
 .logo-emoji {
@@ -113,12 +115,15 @@ header {
 .hero-content h2 {
     font-size: 3.2em;
     font-weight: 900;
+    font-family: 'Black Han Sans', sans-serif;
     line-height: 1.25;
     margin-bottom: 0.3em;
-    background: linear-gradient(135deg, var(--primitive-color), var(--accent), var(--modern-color));
+    background: linear-gradient(135deg, var(--accent), var(--accent-light), var(--accent-dark));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 0 20px rgba(232, 98, 28, 0.3));
 }
 
 .hero-desc {
@@ -139,7 +144,7 @@ header {
 .detector-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 28px;
+    border-radius: 12px;
     padding: 36px;
     max-width: 480px;
     width: 100%;
@@ -150,11 +155,11 @@ header {
 /* ── Upload Area ── */
 .upload-area {
     border: 2px dashed var(--border-color);
-    border-radius: 20px;
+    border-radius: 12px;
     padding: 10px;
     cursor: pointer;
     transition: all 0.3s;
-    background: rgba(199, 125, 255, 0.04);
+    background: rgba(232, 98, 28, 0.04);
     min-height: 250px;
     display: flex;
     align-items: center;
@@ -166,12 +171,12 @@ header {
 
 .upload-area:hover {
     border-color: var(--accent);
-    background: rgba(199, 125, 255, 0.08);
+    background: rgba(232, 98, 28, 0.08);
 }
 
 .upload-area.dragover {
     border-color: var(--accent-light);
-    background: rgba(199, 125, 255, 0.12);
+    background: rgba(232, 98, 28, 0.12);
     transform: scale(1.02);
 }
 
@@ -214,7 +219,7 @@ header {
 /* ── Buttons ── */
 .btn {
     display: inline-block;
-    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    background: linear-gradient(135deg, #E8621C, #C0392B);
     color: #fff;
     padding: 16px 40px;
     border: none;
@@ -298,6 +303,7 @@ header {
 .result-title {
     font-size: 1.8em;
     font-weight: 900;
+    font-family: 'Black Han Sans', sans-serif;
     margin-bottom: 12px;
 }
 
@@ -309,7 +315,7 @@ header {
     color: var(--text-secondary);
     line-height: 1.8;
     padding: 16px 20px;
-    border-radius: 16px;
+    border-radius: 12px;
     margin-bottom: 24px;
     font-weight: 400;
     word-break: keep-all;
@@ -317,14 +323,14 @@ header {
 
 .result-desc.primitive {
     background: var(--primitive-bg);
-    border: 1px solid rgba(255, 107, 53, 0.2);
-    color: #ffb899;
+    border: 1px solid rgba(232, 98, 28, 0.2);
+    color: #F5C5A3;
 }
 
 .result-desc.modern {
     background: var(--modern-bg);
-    border: 1px solid rgba(0, 212, 170, 0.2);
-    color: #80eed5;
+    border: 1px solid rgba(74, 124, 89, 0.2);
+    color: #A3D4B5;
 }
 
 
@@ -362,27 +368,28 @@ header {
 }
 
 .prediction-bar.primitive .bar-fill {
-    background: linear-gradient(90deg, var(--primitive-color), #ff9f75);
+    background: linear-gradient(90deg, #E8621C, #F5A623);
+    box-shadow: 0 0 12px rgba(232, 98, 28, 0.4);
 }
 
 .prediction-bar.modern .bar-fill {
-    background: linear-gradient(90deg, var(--modern-color), #40ffd0);
+    background: linear-gradient(90deg, #4A7C59, #7BC89C);
 }
 
 /* ── Save Button ── */
 .btn-save {
     margin-top: 24px;
-    background: linear-gradient(135deg, #ff6b35, #c77dff, #00d4aa);
+    background: linear-gradient(135deg, #E8621C, #F5A623, #C0392B);
     background-size: 200% 200%;
     animation: gradientShift 3s ease infinite;
     width: 100%;
     font-size: 1.1em;
-    box-shadow: 0 6px 30px rgba(199, 125, 255, 0.3);
+    box-shadow: 0 6px 30px rgba(232, 98, 28, 0.3);
 }
 
 .btn-save:hover {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 40px rgba(199, 125, 255, 0.4);
+    box-shadow: 0 10px 40px rgba(232, 98, 28, 0.4);
 }
 
 /* ── Share Link Button ── */
@@ -521,6 +528,7 @@ header {
 #info h2 {
     font-size: 2.2em;
     font-weight: 900;
+    font-family: 'Black Han Sans', sans-serif;
     margin-bottom: 1em;
 }
 
@@ -534,7 +542,7 @@ header {
 
 .info-item {
     padding: 28px 18px;
-    border-radius: 20px;
+    border-radius: 12px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     transition: transform 0.3s;
@@ -563,7 +571,7 @@ header {
     text-align: center;
     position: relative;
     z-index: 1;
-    background: rgba(26, 16, 40, 0.6);
+    background: rgba(26, 16, 8, 0.6);
     border-top: 1px solid var(--border-color);
 }
 
@@ -620,11 +628,11 @@ footer p { margin: 4px 0; }
     .detector-card {
         padding: 20px 14px;
         margin: 0;
-        border-radius: 20px;
+        border-radius: 12px;
         max-width: 100%;
     }
 
-    .upload-area { min-height: 200px; border-radius: 14px; }
+    .upload-area { min-height: 200px; border-radius: 12px; }
     .upload-icon { font-size: 2.8em; }
     .upload-text { font-size: 0.9em; }
     .preview-image { max-height: 280px; }
