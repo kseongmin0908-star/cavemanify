@@ -309,21 +309,53 @@ async function saveResult() {
 
     try {
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const dataUrl = canvas.toDataURL('image/png');
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-        // Try native share with file on mobile (better UX for saving to gallery)
-        if (navigator.share && navigator.canShare) {
-            const file = new File([blob], 'caveman-result.png', { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-                try {
+        // 1) Mobile: try Web Share API (갤러리 저장 가능)
+        if (isMobile && navigator.share && navigator.canShare) {
+            try {
+                const file = new File([blob], 'caveman-result.png', { type: 'image/png' });
+                if (navigator.canShare({ files: [file] })) {
                     await navigator.share({ files: [file] });
                     return;
-                } catch (e) {
-                    if (e.name === 'AbortError') return;
                 }
+            } catch (e) {
+                if (e.name === 'AbortError') return;
+                // Share failed, fall through
             }
         }
 
-        // Fallback: download
+        // 2) Mobile fallback: 새 탭에 이미지를 열어서 길게 눌러 저장
+        if (isMobile) {
+            const newTab = window.open('', '_blank');
+            if (newTab) {
+                newTab.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>결과 저장</title>
+                        <style>
+                            body { margin: 0; background: #1a1028; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: sans-serif; }
+                            img { max-width: 95%; height: auto; border-radius: 12px; }
+                            p { color: #c77dff; margin-top: 16px; font-size: 15px; text-align: center; padding: 0 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${dataUrl}" alt="결과">
+                        <p>📲 이미지를 길게 눌러서 갤러리에 저장하세요!</p>
+                    </body>
+                    </html>
+                `);
+                newTab.document.close();
+                showToast('📲 이미지를 길게 눌러 저장하세요!');
+                return;
+            }
+        }
+
+        // 3) Desktop: 다운로드
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
