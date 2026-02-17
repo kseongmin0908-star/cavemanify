@@ -386,48 +386,82 @@ function copyToClipboardFallback(text) {
     return ok;
 }
 
-// ── Share Link ──
-async function shareLink() {
-    const siteUrl = 'https://cavemanify1.pages.dev';
-
-    // 1) 네이티브 공유 시트 먼저 시도 (유저 제스처 필요 — 다른 작업 전에 즉시 호출)
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: '원시인 vs 현대인 판별기',
-                text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
-                url: siteUrl
-            });
-            copyToClipboardFallback(siteUrl);
-            return;
-        } catch (e) {
-            if (e.name === 'AbortError') {
-                copyToClipboardFallback(siteUrl);
-                showToast('✅ 링크가 클립보드에 복사되었습니다!');
-                return;
-            }
-            // 디버그: 어떤 에러인지 표시
-            showToast('⚠️ share 에러: ' + e.name + ' / ' + e.message);
-        }
-    } else {
-        showToast('⚠️ navigator.share 미지원 브라우저');
-    }
-
-    // 2) 공유 시트 미지원 또는 실패 시 클립보드 복사
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-            await navigator.clipboard.writeText(siteUrl);
-            showToast('✅ 링크가 클립보드에 복사되었습니다!');
-            return;
-        } catch (e) { /* fall through */ }
-    }
-
-    if (copyToClipboardFallback(siteUrl)) {
-        showToast('✅ 링크가 클립보드에 복사되었습니다!');
-    } else {
-        showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
-    }
+// ── Share Link (커스텀 공유 시트) ──
+function shareLink() {
+    const overlay = document.getElementById('share-sheet-overlay');
+    overlay.classList.remove('hidden');
 }
+
+function closeShareSheet() {
+    const overlay = document.getElementById('share-sheet-overlay');
+    overlay.classList.add('hidden');
+}
+
+function initShareSheet() {
+    const siteUrl = 'https://cavemanify1.pages.dev';
+    const shareText = '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣';
+
+    // 오버레이 배경 클릭 시 닫기
+    document.getElementById('share-sheet-overlay').addEventListener('click', function(e) {
+        if (e.target === this) closeShareSheet();
+    });
+    document.getElementById('share-sheet-close').addEventListener('click', closeShareSheet);
+
+    // 카카오톡
+    document.getElementById('share-kakao').addEventListener('click', function() {
+        copyToClipboardFallback(siteUrl);
+        window.open('https://sharer.kakao.com/talk/friends/picker/link?app_key=&url=' +
+            encodeURIComponent(siteUrl), '_blank');
+        // 카카오 공유 API가 안 열리면 카카오톡 앱으로 이동 시도
+        setTimeout(function() {
+            location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(siteUrl);
+        }, 500);
+        closeShareSheet();
+        showToast('✅ 링크가 복사되었습니다! 카카오톡에 붙여넣기 하세요');
+    });
+
+    // 페이스북
+    document.getElementById('share-facebook').addEventListener('click', function() {
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(siteUrl), '_blank');
+        closeShareSheet();
+    });
+
+    // X (트위터)
+    document.getElementById('share-x').addEventListener('click', function() {
+        window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) +
+            '&url=' + encodeURIComponent(siteUrl), '_blank');
+        closeShareSheet();
+    });
+
+    // 문자
+    document.getElementById('share-sms').addEventListener('click', function() {
+        const body = shareText + '\n' + siteUrl;
+        location.href = 'sms:?body=' + encodeURIComponent(body);
+        closeShareSheet();
+    });
+
+    // 링크 복사
+    document.getElementById('share-copy').addEventListener('click', async function() {
+        let copied = false;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(siteUrl);
+                copied = true;
+            }
+        } catch (e) { /* ignore */ }
+        if (!copied) copied = copyToClipboardFallback(siteUrl);
+
+        if (copied) {
+            showToast('✅ 링크가 클립보드에 복사되었습니다!');
+        } else {
+            showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
+        }
+        closeShareSheet();
+    });
+}
+
+// 페이지 로드 시 공유시트 이벤트 초기화
+document.addEventListener('DOMContentLoaded', initShareSheet);
 
 // ── DOM Elements ──
 const fileInput = document.getElementById('file-input');
