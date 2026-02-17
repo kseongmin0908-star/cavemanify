@@ -389,33 +389,38 @@ function copyToClipboardFallback(text) {
 // ── Share Link ──
 async function shareLink() {
     const siteUrl = 'https://cavemanify1.pages.dev';
+
+    // 1) 항상 클립보드에 링크 복사 (먼저 실행)
+    let copied = false;
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(siteUrl);
+            copied = true;
+        }
+    } catch (e) { /* ignore */ }
+    if (!copied) {
+        copied = copyToClipboardFallback(siteUrl);
+    }
+
+    // 2) 네이티브 공유 시트 열기 (카카오톡, 인스타DM 등)
     const shareData = {
         title: '원시인 vs 현대인 판별기',
         text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
         url: siteUrl
     };
 
-    // 모바일: 네이티브 공유 시트 (canShare로 사전 검증)
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    if (navigator.share) {
         try {
             await navigator.share(shareData);
-            return;
+            return; // 공유 완료 — 토스트 불필요
         } catch (e) {
-            if (e.name === 'AbortError') return;
-            // 실패 시 clipboard fallback
+            if (e.name === 'AbortError') return; // 사용자가 취소
+            // 공유 시트 실패 시 아래 토스트로 이동
         }
     }
 
-    // 데스크톱 / 공유 API 미지원: 클립보드 복사
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-            await navigator.clipboard.writeText(siteUrl);
-            showToast('✅ 링크가 클립보드에 복사되었습니다!');
-            return;
-        } catch (e) { /* fall through */ }
-    }
-
-    if (copyToClipboardFallback(siteUrl)) {
+    // 3) 공유 시트가 없거나 실패한 경우 클립보드 복사 결과 안내
+    if (copied) {
         showToast('✅ 링크가 클립보드에 복사되었습니다!');
     } else {
         showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
