@@ -115,200 +115,281 @@ function showToast(message) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
-// ── Result Card Generation (Canvas) ──
+// ── Result Card Generation (Canvas with user image) ──
 function generateResultCard() {
-    if (!lastResult) return null;
+    if (!lastResult) return Promise.resolve(null);
+
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(buildCanvas(img));
+        img.onerror = () => resolve(buildCanvas(null));
+        img.src = previewImage.src;
+    });
+}
+
+function wrapText(ctx, text, maxWidth) {
+    const lines = [];
+    let remaining = text;
+    while (remaining.length > 0) {
+        let lineEnd = remaining.length;
+        while (ctx.measureText(remaining.substring(0, lineEnd)).width > maxWidth && lineEnd > 1) {
+            lineEnd--;
+        }
+        // Try to break at a space if we cut in the middle
+        if (lineEnd < remaining.length && lineEnd > 1) {
+            const spaceIdx = remaining.lastIndexOf(' ', lineEnd);
+            if (spaceIdx > 0) lineEnd = spaceIdx + 1;
+        }
+        lines.push(remaining.substring(0, lineEnd).trim());
+        remaining = remaining.substring(lineEnd).trim();
+    }
+    return lines;
+}
+
+function buildCanvas(userImg) {
+    const W = 600;
+    const pad = 40;
+    const contentW = W - pad * 2;
+
+    // Pre-calculate description height
+    const tmpCanvas = document.createElement('canvas');
+    const tmpCtx = tmpCanvas.getContext('2d');
+    tmpCtx.font = '15px "Noto Sans KR", sans-serif';
+    const descLines = wrapText(tmpCtx, lastResult.desc, contentW - 20);
+    const descBlockH = descLines.length * 24 + 28;
+
+    // Layout Y positions
+    const topTitleY = 42;
+    const imgSize = 280;
+    const imgY = 62;
+    const emojiY = imgY + imgSize + 50;
+    const titleY = emojiY + 48;
+    const descY = titleY + 24;
+    const barStartY = descY + descBlockH + 20;
+    const urlY = barStartY + 120;
+    const H = urlY + 30;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 400;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext('2d');
 
     // Background gradient
-    const bgGrad = ctx.createLinearGradient(0, 0, 600, 400);
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
     bgGrad.addColorStop(0, '#1a1028');
     bgGrad.addColorStop(0.5, '#2a1a42');
     bgGrad.addColorStop(1, '#1a1028');
     ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 600, 400);
+    ctx.fillRect(0, 0, W, H);
 
-    // Subtle border
+    // Outer border
     ctx.strokeStyle = 'rgba(199, 125, 255, 0.3)';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(16, 2);
-    ctx.lineTo(584, 2);
-    ctx.arcTo(598, 2, 598, 16, 14);
-    ctx.lineTo(598, 384);
-    ctx.arcTo(598, 398, 584, 398, 14);
-    ctx.lineTo(16, 398);
-    ctx.arcTo(2, 398, 2, 384, 14);
-    ctx.lineTo(2, 16);
-    ctx.arcTo(2, 2, 16, 2, 14);
-    ctx.closePath();
+    roundRect(ctx, 2, 2, W - 4, H - 4, 14);
     ctx.stroke();
 
     // Top title
     ctx.font = '18px "Noto Sans KR", sans-serif';
     ctx.fillStyle = '#a090c0';
     ctx.textAlign = 'center';
-    ctx.fillText('🦣 원시인 vs 현대인 판별기', 300, 45);
+    ctx.fillText('🦣 원시인 vs 현대인 판별기', W / 2, topTitleY);
+
+    // User image (large rounded rectangle)
+    const imgX = (W - imgSize) / 2;
+    if (userImg) {
+        ctx.save();
+        roundRect(ctx, imgX, imgY, imgSize, imgSize, 24);
+        ctx.clip();
+        const scale = Math.max(imgSize / userImg.width, imgSize / userImg.height);
+        const sw = imgSize / scale;
+        const sh = imgSize / scale;
+        const sx = (userImg.width - sw) / 2;
+        const sy = (userImg.height - sh) / 2;
+        ctx.drawImage(userImg, sx, sy, sw, sh, imgX, imgY, imgSize, imgSize);
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(199, 125, 255, 0.4)';
+        ctx.lineWidth = 2;
+        roundRect(ctx, imgX, imgY, imgSize, imgSize, 24);
+        ctx.stroke();
+    }
 
     // Result emoji
-    ctx.font = '64px sans-serif';
-    ctx.fillText(lastResult.emoji, 300, 130);
+    ctx.font = '48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(lastResult.emoji, W / 2, emojiY);
 
     // Result title
     const titleColor = lastResult.type === 'primitive' ? '#ff6b35'
-        : lastResult.type === 'modern' ? '#00d4aa'
-        : '#c77dff';
-    ctx.font = 'bold 28px "Noto Sans KR", sans-serif';
+        : lastResult.type === 'modern' ? '#00d4aa' : '#c77dff';
+    ctx.font = 'bold 26px "Noto Sans KR", sans-serif';
     ctx.fillStyle = titleColor;
-    ctx.fillText(lastResult.title, 300, 180);
+    ctx.fillText(lastResult.title, W / 2, titleY);
+
+    // Description background box
+    const descBoxColor = lastResult.type === 'primitive' ? 'rgba(255, 107, 53, 0.1)'
+        : lastResult.type === 'modern' ? 'rgba(0, 212, 170, 0.1)' : 'rgba(199, 125, 255, 0.08)';
+    const descBorderColor = lastResult.type === 'primitive' ? 'rgba(255, 107, 53, 0.25)'
+        : lastResult.type === 'modern' ? 'rgba(0, 212, 170, 0.25)' : 'rgba(199, 125, 255, 0.2)';
+    ctx.fillStyle = descBoxColor;
+    roundRect(ctx, pad, descY, contentW, descBlockH, 12);
+    ctx.fill();
+    ctx.strokeStyle = descBorderColor;
+    ctx.lineWidth = 1;
+    roundRect(ctx, pad, descY, contentW, descBlockH, 12);
+    ctx.stroke();
+
+    // Description text
+    const descTextColor = lastResult.type === 'primitive' ? '#ffb899'
+        : lastResult.type === 'modern' ? '#80eed5' : '#d0c0e8';
+    ctx.font = '15px "Noto Sans KR", sans-serif';
+    ctx.fillStyle = descTextColor;
+    ctx.textAlign = 'left';
+    descLines.forEach((line, i) => {
+        ctx.fillText(line, pad + 10, descY + 22 + i * 24);
+    });
 
     // Percentage bars
-    const barY = 220;
     const barX = 80;
     const barW = 320;
     const barH = 16;
+    drawBar(ctx, barX, barStartY, barW, barH, '🦴 원시인', lastResult.primitiveProb, '#ff6b35', '#ff9f75');
+    drawBar(ctx, barX, barStartY + 50, barW, barH, '💻 현대인', lastResult.modernProb, '#00d4aa', '#40ffd0');
 
-    // Primitive bar
-    ctx.font = '14px "Noto Sans KR", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#f0e8ff';
-    ctx.fillText('원시인', barX, barY - 6);
-    ctx.textAlign = 'right';
-    ctx.fillText(lastResult.primitiveProb.toFixed(1) + '%', barX + barW + 60, barY - 6);
-
-    // Bar background
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.beginPath();
-    ctx.moveTo(barX + 8, barY);
-    ctx.lineTo(barX + barW - 8, barY);
-    ctx.arcTo(barX + barW, barY, barX + barW, barY + 8, 8);
-    ctx.lineTo(barX + barW, barY + barH - 8);
-    ctx.arcTo(barX + barW, barY + barH, barX + barW - 8, barY + barH, 8);
-    ctx.lineTo(barX + 8, barY + barH);
-    ctx.arcTo(barX, barY + barH, barX, barY + barH - 8, 8);
-    ctx.lineTo(barX, barY + 8);
-    ctx.arcTo(barX, barY, barX + 8, barY, 8);
-    ctx.closePath();
-    ctx.fill();
-
-    // Primitive fill
-    const primW = Math.max(barW * (lastResult.primitiveProb / 100), 0);
-    if (primW > 0) {
-        const primGrad = ctx.createLinearGradient(barX, 0, barX + primW, 0);
-        primGrad.addColorStop(0, '#ff6b35');
-        primGrad.addColorStop(1, '#ff9f75');
-        ctx.fillStyle = primGrad;
-        ctx.beginPath();
-        const r = Math.min(8, primW / 2);
-        ctx.moveTo(barX + r, barY);
-        ctx.lineTo(barX + primW - r, barY);
-        ctx.arcTo(barX + primW, barY, barX + primW, barY + r, r);
-        ctx.lineTo(barX + primW, barY + barH - r);
-        ctx.arcTo(barX + primW, barY + barH, barX + primW - r, barY + barH, r);
-        ctx.lineTo(barX + r, barY + barH);
-        ctx.arcTo(barX, barY + barH, barX, barY + barH - r, r);
-        ctx.lineTo(barX, barY + r);
-        ctx.arcTo(barX, barY, barX + r, barY, r);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    // Modern bar
-    const bar2Y = barY + 50;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#f0e8ff';
-    ctx.fillText('현대인', barX, bar2Y - 6);
-    ctx.textAlign = 'right';
-    ctx.fillText(lastResult.modernProb.toFixed(1) + '%', barX + barW + 60, bar2Y - 6);
-
-    // Bar background
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.beginPath();
-    ctx.moveTo(barX + 8, bar2Y);
-    ctx.lineTo(barX + barW - 8, bar2Y);
-    ctx.arcTo(barX + barW, bar2Y, barX + barW, bar2Y + 8, 8);
-    ctx.lineTo(barX + barW, bar2Y + barH - 8);
-    ctx.arcTo(barX + barW, bar2Y + barH, barX + barW - 8, bar2Y + barH, 8);
-    ctx.lineTo(barX + 8, bar2Y + barH);
-    ctx.arcTo(barX, bar2Y + barH, barX, bar2Y + barH - 8, 8);
-    ctx.lineTo(barX, bar2Y + 8);
-    ctx.arcTo(barX, bar2Y, barX + 8, bar2Y, 8);
-    ctx.closePath();
-    ctx.fill();
-
-    // Modern fill
-    const modW = Math.max(barW * (lastResult.modernProb / 100), 0);
-    if (modW > 0) {
-        const modGrad = ctx.createLinearGradient(barX, 0, barX + modW, 0);
-        modGrad.addColorStop(0, '#00d4aa');
-        modGrad.addColorStop(1, '#40ffd0');
-        ctx.fillStyle = modGrad;
-        ctx.beginPath();
-        const r2 = Math.min(8, modW / 2);
-        ctx.moveTo(barX + r2, bar2Y);
-        ctx.lineTo(barX + modW - r2, bar2Y);
-        ctx.arcTo(barX + modW, bar2Y, barX + modW, bar2Y + r2, r2);
-        ctx.lineTo(barX + modW, bar2Y + barH - r2);
-        ctx.arcTo(barX + modW, bar2Y + barH, barX + modW - r2, bar2Y + barH, r2);
-        ctx.lineTo(barX + r2, bar2Y + barH);
-        ctx.arcTo(barX, bar2Y + barH, barX, bar2Y + barH - r2, r2);
-        ctx.lineTo(barX, bar2Y + r2);
-        ctx.arcTo(barX, bar2Y, barX + r2, bar2Y, r2);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    // Site URL (CTA)
-    ctx.font = '16px "Noto Sans KR", sans-serif';
+    // Site URL
+    ctx.font = '15px "Noto Sans KR", sans-serif';
     ctx.fillStyle = '#c77dff';
     ctx.textAlign = 'center';
-    ctx.fillText('cavemanify1.pages.dev', 300, 370);
+    ctx.fillText('🔗 cavemanify1.pages.dev', W / 2, urlY);
 
     return canvas;
 }
 
-// ── Share ──
-async function shareResult() {
-    const canvas = generateResultCard();
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+}
+
+function drawBar(ctx, barX, barY, barW, barH, label, value, color1, color2) {
+    ctx.font = '14px "Noto Sans KR", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f0e8ff';
+    ctx.fillText(label, barX, barY - 6);
+    ctx.textAlign = 'right';
+    ctx.fillText(value.toFixed(1) + '%', barX + barW + 60, barY - 6);
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    roundRect(ctx, barX, barY, barW, barH, 8);
+    ctx.fill();
+
+    const fillW = Math.max(barW * (value / 100), 0);
+    if (fillW > 0) {
+        const grad = ctx.createLinearGradient(barX, 0, barX + fillW, 0);
+        grad.addColorStop(0, color1);
+        grad.addColorStop(1, color2);
+        ctx.fillStyle = grad;
+        const r = Math.min(8, fillW / 2);
+        roundRect(ctx, barX, barY, fillW, barH, r);
+        ctx.fill();
+    }
+}
+
+// ── Save Result (download image) ──
+async function saveResult() {
+    const canvas = await generateResultCard();
     if (!canvas) return;
 
     try {
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        const file = new File([blob], 'caveman-result.png', { type: 'image/png' });
 
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                title: '원시인 vs 현대인 판별기',
-                text: `나의 결과: ${lastResult.title} - 원시인 ${lastResult.primitiveProb.toFixed(1)}% / 현대인 ${lastResult.modernProb.toFixed(1)}%`,
-                files: [file],
-                url: 'https://cavemanify1.pages.dev'
-            });
-        } else {
-            // Clipboard fallback
-            try {
-                await navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                ]);
-                showToast('✅ 이미지가 클립보드에 복사되었습니다!');
-            } catch {
-                // Final fallback: download
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'caveman-result.png';
-                a.click();
-                URL.revokeObjectURL(url);
-                showToast('📥 결과 이미지가 다운로드되었습니다!');
+        // Try native share with file on mobile (better UX for saving to gallery)
+        if (navigator.share && navigator.canShare) {
+            const file = new File([blob], 'caveman-result.png', { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ files: [file] });
+                    return;
+                } catch (e) {
+                    if (e.name === 'AbortError') return;
+                }
             }
         }
+
+        // Fallback: download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'caveman-result.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('📥 결과 이미지가 다운로드되었습니다!');
     } catch (err) {
-        if (err.name !== 'AbortError') {
-            showToast('공유에 실패했습니다. 다시 시도해주세요.');
+        showToast('저장에 실패했습니다. 다시 시도해주세요.');
+    }
+}
+
+// ── Clipboard fallback using textarea (works on all browsers) ──
+function copyToClipboardFallback(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(textarea);
+    return ok;
+}
+
+// ── Share Link ──
+async function shareLink() {
+    const siteUrl = 'https://cavemanify1.pages.dev';
+    const shareText = '나는 원시인일까 현대인일까? 테스트 해봐! 🦣';
+
+    // Try Web Share API first (mobile)
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: '원시인 vs 현대인 판별기',
+                text: shareText,
+                url: siteUrl
+            });
+            return;
+        } catch (e) {
+            if (e.name === 'AbortError') return;
+            // Fall through to clipboard
         }
+    }
+
+    // Try modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(siteUrl);
+            showToast('✅ 링크가 클립보드에 복사되었습니다!');
+            return;
+        } catch (e) {
+            // Fall through to legacy fallback
+        }
+    }
+
+    // Legacy fallback
+    if (copyToClipboardFallback(siteUrl)) {
+        showToast('✅ 링크가 클립보드에 복사되었습니다!');
+    } else {
+        showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
     }
 }
 
@@ -325,9 +406,11 @@ const resultTitle = document.getElementById('result-title');
 const resultDesc = document.getElementById('result-desc');
 const labelContainer = document.getElementById('label-container');
 const loading = document.getElementById('loading');
-const shareBtn = document.getElementById('share-btn');
+const saveBtn = document.getElementById('save-btn');
+const shareLinkBtn = document.getElementById('share-link-btn');
 
-shareBtn.addEventListener('click', shareResult);
+saveBtn.addEventListener('click', saveResult);
+shareLinkBtn.addEventListener('click', shareLink);
 
 // ── Upload Handling ──
 uploadArea.addEventListener('click', () => fileInput.click());

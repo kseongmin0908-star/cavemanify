@@ -369,8 +369,8 @@ header {
     background: linear-gradient(90deg, var(--modern-color), #40ffd0);
 }
 
-/* ── Share Button ── */
-.btn-share {
+/* ── Save Button ── */
+.btn-save {
     margin-top: 24px;
     background: linear-gradient(135deg, #ff6b35, #c77dff, #00d4aa);
     background-size: 200% 200%;
@@ -380,9 +380,27 @@ header {
     box-shadow: 0 6px 30px rgba(199, 125, 255, 0.3);
 }
 
-.btn-share:hover {
+.btn-save:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 10px 40px rgba(199, 125, 255, 0.4);
+}
+
+/* ── Share Link Button ── */
+.btn-share-link {
+    margin-top: 10px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    width: 100%;
+    font-size: 1em;
+    color: var(--text-secondary);
+    box-shadow: none;
+}
+
+.btn-share-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: none;
 }
 
 @keyframes gradientShift {
@@ -462,6 +480,31 @@ header {
     line-height: 1.6;
 }
 
+/* ── Disclaimer ── */
+#disclaimer {
+    padding: 30px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    background: rgba(26, 16, 40, 0.6);
+    border-top: 1px solid var(--border-color);
+}
+
+.disclaimer-content {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.disclaimer-content p {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    line-height: 1.6;
+}
+
 /* ── Footer ── */
 footer {
     text-align: center;
@@ -511,7 +554,8 @@ footer p { margin: 4px 0; }
 
     .btn { padding: 14px 28px; font-size: 1em; border-radius: 12px; width: 100%; }
     .btn-secondary { width: 100%; }
-    .btn-share { font-size: 1em; }
+    .btn-save { font-size: 1em; }
+    .btn-share-link { font-size: 0.92em; }
 
     .result-emoji { font-size: 3.2em; }
     .result-title { font-size: 1.3em; }
@@ -533,6 +577,9 @@ footer p { margin: 4px 0; }
     .info-icon { font-size: 2em; }
 
     footer { padding: 20px 16px; font-size: 0.8em; }
+
+    #disclaimer { padding: 24px 16px; }
+    .disclaimer-content p { font-size: 0.75em; }
 
     .float-emoji { font-size: 1.8em; }
 }
