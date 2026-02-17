@@ -192,7 +192,7 @@ function buildCanvas(userImg) {
     ctx.font = '18px "Noto Sans KR", sans-serif';
     ctx.fillStyle = '#8C7B6B';
     ctx.textAlign = 'center';
-    ctx.fillText('🦣 원시인 vs 현대인 판별기', W / 2, topTitleY);
+    ctx.fillText('🦣 원시력 테스트', W / 2, topTitleY);
 
     // User image (large rounded rectangle)
     const imgX = (W - imgSize) / 2;
@@ -402,7 +402,12 @@ var SHARE_URL = 'https://cavemanify1.pages.dev';
 var SHARE_TEXT = '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣';
 
 function shareLink() {
-    document.getElementById('share-sheet-overlay').classList.remove('hidden');
+    var overlay = document.getElementById('share-sheet-overlay');
+    // body 직속으로 이동시켜 부모 stacking context에 가려지지 않도록 함
+    if (overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+    }
+    overlay.classList.remove('hidden');
 }
 
 function closeShareSheet() {
@@ -455,7 +460,7 @@ function initShareSheet() {
 
         if (navigator.share) {
             navigator.share({
-                title: '원시인 vs 현대인 판별기',
+                title: '원시력 테스트',
                 text: SHARE_TEXT,
                 url: SHARE_URL
             }).catch(function() {});
@@ -484,7 +489,34 @@ function initShareSheet() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', initShareSheet);
+document.addEventListener('DOMContentLoaded', function() {
+    initShareSheet();
+
+    // 개인정보처리방침 / 이용약관 모달
+    document.getElementById('privacy-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('privacy-modal').classList.remove('hidden');
+    });
+    document.getElementById('terms-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('terms-modal').classList.remove('hidden');
+    });
+
+    // 모달 닫기 버튼
+    document.querySelectorAll('.policy-close-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var modalId = this.getAttribute('data-modal');
+            document.getElementById(modalId).classList.add('hidden');
+        });
+    });
+
+    // 모달 배경 클릭 시 닫기
+    document.querySelectorAll('.policy-modal').forEach(function(modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.add('hidden');
+        });
+    });
+});
 
 // ── DOM Elements ──
 const fileInput = document.getElementById('file-input');
