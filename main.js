@@ -423,18 +423,8 @@ function initShareSheet() {
         // 1순위: Kakao SDK로 공유 (앱 키 등록 시)
         if (kakaoReady) {
             try {
-                Kakao.Share.sendDefault({
-                    objectType: 'feed',
-                    content: {
-                        title: '원시인 vs 현대인 판별기',
-                        description: '나는 원시인일까 현대인일까? AI가 판별해줍니다!',
-                        imageUrl: 'https://cavemanify1.pages.dev/og-thumbnail.jpg',
-                        link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL }
-                    },
-                    buttons: [{
-                        title: '테스트 하러 가기',
-                        link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL }
-                    }]
+                Kakao.Share.sendScrap({
+                    requestUrl: SHARE_URL
                 });
                 return;
             } catch (e) { /* SDK 실패 시 fallback */ }
