@@ -389,42 +389,28 @@ function copyToClipboardFallback(text) {
 // ── Share Link ──
 async function shareLink() {
     const siteUrl = 'https://cavemanify1.pages.dev';
-
-    // 1) 항상 클립보드에 링크 복사 (먼저 실행)
-    let copied = false;
-    try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(siteUrl);
-            copied = true;
-        }
-    } catch (e) { /* ignore */ }
-    if (!copied) {
-        copied = copyToClipboardFallback(siteUrl);
-    }
-
-    // 2) 네이티브 공유 시트 열기 (카카오톡, 인스타DM 등)
     const shareData = {
         title: '원시인 vs 현대인 판별기',
         text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
         url: siteUrl
     };
 
+    // 1) 동기 클립보드 복사 (execCommand — 유저 제스처를 소모하지 않음)
+    copyToClipboardFallback(siteUrl);
+
+    // 2) 네이티브 공유 시트 열기 (유저 제스처가 살아있는 상태에서 즉시 호출)
     if (navigator.share) {
         try {
             await navigator.share(shareData);
-            return; // 공유 완료 — 토스트 불필요
+            return; // 공유 시트에서 공유 완료
         } catch (e) {
             if (e.name === 'AbortError') return; // 사용자가 취소
             // 공유 시트 실패 시 아래 토스트로 이동
         }
     }
 
-    // 3) 공유 시트가 없거나 실패한 경우 클립보드 복사 결과 안내
-    if (copied) {
-        showToast('✅ 링크가 클립보드에 복사되었습니다!');
-    } else {
-        showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
-    }
+    // 3) 공유 시트가 없거나 실패한 경우 토스트 안내
+    showToast('✅ 링크가 클립보드에 복사되었습니다!');
 }
 
 // ── DOM Elements ──
