@@ -389,35 +389,37 @@ function copyToClipboardFallback(text) {
 // ── Share Link ──
 async function shareLink() {
     const siteUrl = 'https://cavemanify1.pages.dev';
-    const shareText = '나는 원시인일까 현대인일까? 테스트 해봐! 🦣';
 
-    // Try Web Share API first (mobile)
+    // 모바일: 네이티브 공유 시트
     if (navigator.share) {
         try {
+            // url만 단독 전달 (text+url 동시 전달 시 일부 브라우저 오류)
+            await navigator.share({ url: siteUrl });
+            return;
+        } catch (e) {
+            if (e.name === 'AbortError') return;
+        }
+
+        // url 단독 실패 시 text에 합쳐서 재시도
+        try {
             await navigator.share({
-                title: '원시인 vs 현대인 판별기',
-                text: shareText,
-                url: siteUrl
+                text: '나는 원시인일까 현대인일까? 테스트 해봐! 🦣\n' + siteUrl
             });
             return;
         } catch (e) {
             if (e.name === 'AbortError') return;
-            // Fall through to clipboard
         }
     }
 
-    // Try modern clipboard API
+    // 데스크톱 / 공유 API 미지원: 클립보드 복사
     if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
             await navigator.clipboard.writeText(siteUrl);
             showToast('✅ 링크가 클립보드에 복사되었습니다!');
             return;
-        } catch (e) {
-            // Fall through to legacy fallback
-        }
+        } catch (e) { /* fall through */ }
     }
 
-    // Legacy fallback
     if (copyToClipboardFallback(siteUrl)) {
         showToast('✅ 링크가 클립보드에 복사되었습니다!');
     } else {
