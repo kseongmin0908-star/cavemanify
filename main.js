@@ -386,81 +386,115 @@ function copyToClipboardFallback(text) {
     return ok;
 }
 
+// ── Kakao SDK 초기화 ──
+// TODO: 아래 'YOUR_KAKAO_APP_KEY'를 실제 JavaScript 앱 키로 교체하세요
+var KAKAO_APP_KEY = 'YOUR_KAKAO_APP_KEY';
+var kakaoReady = false;
+
+try {
+    if (window.Kakao && !Kakao.isInitialized()) {
+        Kakao.init(KAKAO_APP_KEY);
+        kakaoReady = Kakao.isInitialized();
+    }
+} catch (e) { kakaoReady = false; }
+
 // ── Share Link (커스텀 공유 시트) ──
+var SHARE_URL = 'https://cavemanify1.pages.dev';
+var SHARE_TEXT = '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣';
+
 function shareLink() {
-    const overlay = document.getElementById('share-sheet-overlay');
-    overlay.classList.remove('hidden');
+    document.getElementById('share-sheet-overlay').classList.remove('hidden');
 }
 
 function closeShareSheet() {
-    const overlay = document.getElementById('share-sheet-overlay');
-    overlay.classList.add('hidden');
+    document.getElementById('share-sheet-overlay').classList.add('hidden');
 }
 
 function initShareSheet() {
-    const siteUrl = 'https://cavemanify1.pages.dev';
-    const shareText = '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣';
-
     // 오버레이 배경 클릭 시 닫기
     document.getElementById('share-sheet-overlay').addEventListener('click', function(e) {
         if (e.target === this) closeShareSheet();
     });
     document.getElementById('share-sheet-close').addEventListener('click', closeShareSheet);
 
-    // 카카오톡
+    // ── 카카오톡 ──
     document.getElementById('share-kakao').addEventListener('click', function() {
-        copyToClipboardFallback(siteUrl);
-        window.open('https://sharer.kakao.com/talk/friends/picker/link?app_key=&url=' +
-            encodeURIComponent(siteUrl), '_blank');
-        // 카카오 공유 API가 안 열리면 카카오톡 앱으로 이동 시도
+        closeShareSheet();
+
+        // 1순위: Kakao SDK로 공유 (앱 키 등록 시)
+        if (kakaoReady) {
+            try {
+                Kakao.Share.sendDefault({
+                    objectType: 'feed',
+                    content: {
+                        title: '원시인 vs 현대인 판별기',
+                        description: '나는 원시인일까 현대인일까? AI가 판별해줍니다!',
+                        imageUrl: 'https://cavemanify1.pages.dev/og-thumbnail.jpg',
+                        link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL }
+                    },
+                    buttons: [{
+                        title: '테스트 하러 가기',
+                        link: { mobileWebUrl: SHARE_URL, webUrl: SHARE_URL }
+                    }]
+                });
+                return;
+            } catch (e) { /* SDK 실패 시 fallback */ }
+        }
+
+        // 2순위: 링크 복사 + 카카오톡 앱 열기
+        copyToClipboardFallback(SHARE_URL);
+        showToast('✅ 링크 복사 완료! 카카오톡에서 붙여넣기 하세요');
         setTimeout(function() {
-            location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(siteUrl);
-        }, 500);
-        closeShareSheet();
-        showToast('✅ 링크가 복사되었습니다! 카카오톡에 붙여넣기 하세요');
+            location.href = 'kakaotalk://';
+        }, 300);
     });
 
-    // 페이스북
-    document.getElementById('share-facebook').addEventListener('click', function() {
-        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(siteUrl), '_blank');
+    // ── 인스타그램 ──
+    document.getElementById('share-insta').addEventListener('click', function() {
         closeShareSheet();
+        // 인스타그램은 웹에서 DM 직접 공유 불가 → 링크 복사 후 앱 열기
+        copyToClipboardFallback(SHARE_URL);
+        showToast('✅ 링크 복사 완료! 인스타 DM에서 붙여넣기 하세요');
+        setTimeout(function() {
+            location.href = 'instagram://direct-inbox';
+        }, 300);
     });
 
-    // X (트위터)
-    document.getElementById('share-x').addEventListener('click', function() {
-        window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) +
-            '&url=' + encodeURIComponent(siteUrl), '_blank');
+    // ── 더보기 (네이티브 공유 시트 / 페이스북·X·문자 등) ──
+    document.getElementById('share-more').addEventListener('click', function() {
         closeShareSheet();
+
+        if (navigator.share) {
+            navigator.share({
+                title: '원시인 vs 현대인 판별기',
+                text: SHARE_TEXT,
+                url: SHARE_URL
+            }).catch(function() {});
+        } else {
+            // 네이티브 공유 미지원 시 링크 복사
+            copyToClipboardFallback(SHARE_URL);
+            showToast('✅ 링크가 클립보드에 복사되었습니다!');
+        }
     });
 
-    // 문자
-    document.getElementById('share-sms').addEventListener('click', function() {
-        const body = shareText + '\n' + siteUrl;
-        location.href = 'sms:?body=' + encodeURIComponent(body);
-        closeShareSheet();
-    });
-
-    // 링크 복사
+    // ── 링크 복사 ──
     document.getElementById('share-copy').addEventListener('click', async function() {
-        let copied = false;
+        closeShareSheet();
+        var copied = false;
         try {
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(siteUrl);
+                await navigator.clipboard.writeText(SHARE_URL);
                 copied = true;
             }
         } catch (e) { /* ignore */ }
-        if (!copied) copied = copyToClipboardFallback(siteUrl);
+        if (!copied) copied = copyToClipboardFallback(SHARE_URL);
 
-        if (copied) {
-            showToast('✅ 링크가 클립보드에 복사되었습니다!');
-        } else {
-            showToast('링크 복사에 실패했습니다. 직접 복사해주세요: ' + siteUrl);
-        }
-        closeShareSheet();
+        showToast(copied
+            ? '✅ 링크가 클립보드에 복사되었습니다!'
+            : '링크 복사에 실패했습니다. 직접 복사해주세요: ' + SHARE_URL);
     });
 }
 
-// 페이지 로드 시 공유시트 이벤트 초기화
 document.addEventListener('DOMContentLoaded', initShareSheet);
 
 // ── DOM Elements ──

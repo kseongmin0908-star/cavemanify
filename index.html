@@ -25,6 +25,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <!-- Kakao SDK -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="bg-deco">
@@ -82,7 +84,7 @@
                 <div id="share-sheet-overlay" class="share-sheet-overlay hidden">
                     <div class="share-sheet">
                         <div class="share-sheet-header">
-                            <span>공유하기</span>
+                            <span>친구에게 공유하기</span>
                             <button id="share-sheet-close" class="share-sheet-close-btn">&times;</button>
                         </div>
                         <div class="share-sheet-grid">
@@ -92,23 +94,17 @@
                                 </div>
                                 <span>카카오톡</span>
                             </button>
-                            <button class="share-item" id="share-facebook">
-                                <div class="share-icon" style="background:#1877F2;">
-                                    <svg viewBox="0 0 24 24" width="28" height="28"><path d="M24 12c0-6.627-5.373-12-12-12S0 5.373 0 12c0 5.99 4.388 10.954 10.125 11.854V15.47H7.078V12h3.047V9.356c0-3.007 1.792-4.668 4.533-4.668 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874V12h3.328l-.532 3.47h-2.796v8.385C19.612 22.954 24 17.99 24 12z" fill="white"/></svg>
+                            <button class="share-item" id="share-insta">
+                                <div class="share-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);">
+                                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" fill="white"/></svg>
                                 </div>
-                                <span>페이스북</span>
+                                <span>인스타그램</span>
                             </button>
-                            <button class="share-item" id="share-x">
-                                <div class="share-icon" style="background:#000;">
-                                    <svg viewBox="0 0 24 24" width="22" height="22"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="white"/></svg>
+                            <button class="share-item" id="share-more">
+                                <div class="share-icon" style="background:#555;">
+                                    <svg viewBox="0 0 24 24" width="24" height="24"><circle cx="6" cy="12" r="2" fill="white"/><circle cx="12" cy="12" r="2" fill="white"/><circle cx="18" cy="12" r="2" fill="white"/></svg>
                                 </div>
-                                <span>X (트위터)</span>
-                            </button>
-                            <button class="share-item" id="share-sms">
-                                <div class="share-icon" style="background:#34C759;">
-                                    <svg viewBox="0 0 24 24" width="26" height="26"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" fill="white"/><path d="M7 9h10v2H7zm0-3h10v2H7z" fill="white"/></svg>
-                                </div>
-                                <span>문자</span>
+                                <span>더보기</span>
                             </button>
                             <button class="share-item" id="share-copy">
                                 <div class="share-icon" style="background:var(--accent);">
