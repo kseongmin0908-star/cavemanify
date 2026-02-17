@@ -398,18 +398,19 @@ async function shareLink() {
                 text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
                 url: siteUrl
             });
-            // 공유 시트에서 공유 완료 — 클립보드도 복사해두기
             copyToClipboardFallback(siteUrl);
             return;
         } catch (e) {
             if (e.name === 'AbortError') {
-                // 사용자가 취소 — 클립보드에는 복사해두기
                 copyToClipboardFallback(siteUrl);
                 showToast('✅ 링크가 클립보드에 복사되었습니다!');
                 return;
             }
-            // 그 외 에러 — 공유 시트 실패, 아래 클립보드 복사로 이동
+            // 디버그: 어떤 에러인지 표시
+            showToast('⚠️ share 에러: ' + e.name + ' / ' + e.message);
         }
+    } else {
+        showToast('⚠️ navigator.share 미지원 브라우저');
     }
 
     // 2) 공유 시트 미지원 또는 실패 시 클립보드 복사
