@@ -389,25 +389,20 @@ function copyToClipboardFallback(text) {
 // ── Share Link ──
 async function shareLink() {
     const siteUrl = 'https://cavemanify1.pages.dev';
+    const shareData = {
+        title: '원시인 vs 현대인 판별기',
+        text: '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣',
+        url: siteUrl
+    };
 
-    // 모바일: 네이티브 공유 시트
-    if (navigator.share) {
+    // 모바일: 네이티브 공유 시트 (canShare로 사전 검증)
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         try {
-            // url만 단독 전달 (text+url 동시 전달 시 일부 브라우저 오류)
-            await navigator.share({ url: siteUrl });
+            await navigator.share(shareData);
             return;
         } catch (e) {
             if (e.name === 'AbortError') return;
-        }
-
-        // url 단독 실패 시 text에 합쳐서 재시도
-        try {
-            await navigator.share({
-                text: '나는 원시인일까 현대인일까? 테스트 해봐! 🦣\n' + siteUrl
-            });
-            return;
-        } catch (e) {
-            if (e.name === 'AbortError') return;
+            // 실패 시 clipboard fallback
         }
     }
 
