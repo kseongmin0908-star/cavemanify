@@ -259,7 +259,7 @@ function buildCanvas(userImg) {
     ctx.font = '15px "Noto Sans KR", sans-serif';
     ctx.fillStyle = '#F5A623';
     ctx.textAlign = 'center';
-    ctx.fillText('🔗 cavemanify1.pages.dev', W / 2, urlY);
+    ctx.fillText('🔗 primal-type.com', W / 2, urlY);
 
     return canvas;
 }
@@ -398,7 +398,7 @@ try {
 } catch (e) { kakaoReady = false; }
 
 // ── Share Link (커스텀 공유 시트) ──
-var SHARE_URL = 'https://cavemanify1.pages.dev';
+var SHARE_URL = 'https://primal-type.com';
 var SHARE_TEXT = '나는 원시인일까 현대인일까? AI 테스트 해봐! 🦣';
 
 function shareLink() {
