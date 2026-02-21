@@ -1,4 +1,4 @@
-# robots.txt for 원시력 테스트 (cavemanify1.pages.dev)
+# robots.txt for 원시력 테스트 (primal-type.com)
 
 User-agent: *
 Allow: /
