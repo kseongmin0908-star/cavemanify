@@ -1,0 +1,15 @@
+# robots.txt for 원시력 테스트 (cavemanify1.pages.dev)
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cavemanify1.pages.dev/sitemap.xml
+
+# Block unnecessary files from crawling
+Disallow: /node_modules/
+Disallow: /my_model/
+Disallow: /*.json$
+Disallow: /wrangler.jsonc
+Disallow: /blueprint.md
+Disallow: /GEMINI.md
